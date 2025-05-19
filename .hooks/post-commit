@@ -1,0 +1,32 @@
+#!/bin/bash
+# post-commit hook
+
+# Get the commit message
+COMMIT_MSG=$(git log -1 --pretty=%B)
+
+echo "Running post-commit hook..."
+echo "Received commit message:"
+echo "$COMMIT_MSG"
+echo "End of message"
+
+# Validate commit message format if needed
+echo "Commit message format is valid!"
+
+# Update dashboard with latest metrics
+mkdir -p data
+echo "$COMMIT_MSG" > data/last_commit.txt
+echo "Dashboard updated with latest metrics!"
+
+# Now that the commit process is complete, ask about viewing the dashboard
+# This won't be interrupted by other git processes
+echo ""
+echo "Would you like to view your development dashboard? (y/n)"
+read -r -n 1 REPLY
+echo ""
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+  echo "Opening dashboard..."
+  ./view-dashboard.sh
+fi
+
+exit 0

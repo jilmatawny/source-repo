@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Development Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .metric { border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 5px; }
+    .success { background-color: #e6ffe6; }
+    .warning { background-color: #fff9e6; }
+    .error { background-color: #ffe6e6; }
+  </style>
+</head>
+<body>
+  <h1>Local Development Dashboard</h1>
+  <div class="metric success">
+    <h2>Commits Today: <span id="commit-count">0</span></h2>
+    <p>Last commit: <span id="last-commit">None</span></p>
+  </div>
+  <div class="metric">
+    <h2>Lambda Tests</h2>
+    <p>Success rate: <span id="lambda-success">100%</span></p>
+  </div>
+  <div class="metric warning">
+    <h2>Code Quality</h2>
+    <p>TODOs: <span id="todo-count">0</span></p>
+  </div>
+
+  <!-- Include data directly in the HTML file to avoid file:// access issues -->
+  <script>
+    // This script will be replaced by the view-dashboard.sh script
+    // with actual values read from the data files
+    const dashboardData = {
+      commitCount: "{{COMMIT_COUNT}}",
+      lastCommit: "{{LAST_COMMIT}}",
+      todoCount: "{{TODO_COUNT}}",
+      lambdaStatus: "{{LAMBDA_STATUS}}"
+    };
+    
+    // Update the dashboard with the embedded data
+    function updateDashboard() {
+      // Update commit info
+      document.getElementById('commit-count').textContent = 
+        dashboardData.commitCount !== "{{COMMIT_COUNT}}" ? dashboardData.commitCount : "0";
+        
+      document.getElementById('last-commit').textContent = 
+        dashboardData.lastCommit !== "{{LAST_COMMIT}}" ? dashboardData.lastCommit : "None";
+      
+      // Update TODO count
+      document.getElementById('todo-count').textContent = 
+        dashboardData.todoCount !== "{{TODO_COUNT}}" ? dashboardData.todoCount : "0";
+      
+      // Update lambda status
+      const lambdaStatus = dashboardData.lambdaStatus !== "{{LAMBDA_STATUS}}" ? 
+        dashboardData.lambdaStatus : "SUCCESS";
+      
+      document.getElementById('lambda-success').textContent = 
+        lambdaStatus === "SUCCESS" ? "100%" : "0%";
+      
+      // Update lambda metric styling
+      const lambdaMetric = document.querySelector('.metric:nth-child(2)');
+      lambdaMetric.classList.remove('success', 'warning', 'error');
+      
+      if (lambdaStatus === "SUCCESS") {
+        lambdaMetric.classList.add('success');
+      } else if (lambdaStatus === "FAILED") {
+        lambdaMetric.classList.add('error');
+      }
+    }
+    
+    // Initial update
+    updateDashboard();
+  </script>
+</body>
+</html>

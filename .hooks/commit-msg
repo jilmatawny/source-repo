@@ -1,0 +1,23 @@
+#!/bin/bash
+
+COMMIT_MSG_FILE=$1
+MESSAGE=$(cat $COMMIT_MSG_FILE)
+
+echo "Received commit message:"
+cat $COMMIT_MSG_FILE
+echo "End of message"
+
+# Check if message starts with a type
+if ! grep -qE "^\[.*\] (feat|fix|docs|style|refactor|test|chore):" "$COMMIT_MSG_FILE"; then
+  echo "Error: Commit message must start with type (feat|fix|docs|style|refactor|test|chore):"
+  echo "For example: feat: add new feature"
+  exit 1
+fi
+
+# Check if message is too short
+if [ ${#MESSAGE} -lt 10 ]; then
+  echo "Error: Commit message is too short (minimum 10 characters)"
+  exit 1
+fi
+
+echo "Commit message format is valid!"

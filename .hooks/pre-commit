@@ -1,0 +1,67 @@
+#!/bin/bash
+
+echo "Running pre-commit hook..."
+
+# Variables to track various checks
+TODO_COUNT=0
+TODO_FILES=""
+
+# Ensure data directory exists
+mkdir -p data
+
+# Check for placeholder text in staged files
+if TODO_FILES=$(git diff --cached --name-only | xargs grep -l "TODO" 2>/dev/null); then
+  TODO_COUNT=$(echo "$TODO_FILES" | wc -l)
+  echo "Warning: You have $TODO_COUNT TODO item(s) in your code."
+  echo "Files with TODOs:"
+  echo "$TODO_FILES"
+  
+  # Update the dashboard with TODO count
+  echo "$TODO_COUNT" > data/todo_count.txt
+  
+  # Ask user if they want to continue despite TODOs
+  echo "Continue with commit anyway? (y/n)"
+  read -n 1 REPLY
+  echo ""
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Commit aborted."
+    # Update lambda status to FAILED since commit was aborted
+    echo "FAILED" > data/lambda_status.txt
+    exit 1
+  fi
+fi
+
+# Run enhanced Lambda testing
+echo "Running Lambda tests..."
+if ! ./.hooks/lambda-test-pipeline.sh; then
+  echo "Lambda tests failed. Commit aborted."
+  echo "FAILED" > data/lambda_status.txt
+  exit 1
+else
+  echo "Lambda tests passed."
+  echo "SUCCESS" > data/lambda_status.txt
+fi
+
+# Run security-check
+echo "Running security checks..."
+if ! ./.hooks/security-check.sh; then
+  echo "Security checks failed. Commit aborted."
+  # Also mark as failed for security check failure
+  echo "FAILED" > data/lambda_status.txt
+  exit 1
+else
+  echo "Security checks passed."
+fi
+
+# At this point, everything passed and we're about to commit
+echo "Pre-commit hook passed!"
+
+# Get today's commit count for dashboard stats
+TODAY_COUNT=$(git log --since="00:00:00" --oneline | wc -l)
+NEXT_COUNT=$((TODAY_COUNT + 1))
+echo "Commit count today: $NEXT_COUNT"
+
+# Update dashboard data - will be accessible to post-commit hook
+echo "$NEXT_COUNT" > data/commit_count.txt
+
+exit 0

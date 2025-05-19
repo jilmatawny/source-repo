@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+
+# Packaging
+*.egg-info/
+build/
+dist/
+*.whl
+
+# IDEs/editors
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# macOS
+.DS_Store
+
+# Output/data/reports
+dashboard.html
+data/
+reports/
+.dashboard/
+pipeline_logs/
+
+# Test/temp files
+test-failure.txt
+*.tmp
+*.sh~
+
+# Node/test JS files (if not real source)
+test-file.js
+procomtest.txt
+proper-clean-test-1.js
+proper-clean-test.js
+newfile.js
+feature.js
+app.js
+test_lambda.js

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+echo "Running pre-push hook..."
+
+# Run the local CI pipeline
+./.ci/run-pipeline.sh
+CI_RESULT=$?
+
+if [ $CI_RESULT -ne 0 ]; then
+  echo "❌ CI pipeline failed! Push aborted."
+  exit 1
+fi
+
+echo "✅ Pre-push hook passed!"
+exit 0

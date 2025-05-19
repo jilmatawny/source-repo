@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Get the commit message file path
+COMMIT_MSG_FILE=$1
+
+# Add a prefix with the branch name
+BRANCH_NAME=$(git branch --show-current)
+echo "[$BRANCH_NAME] $(cat $COMMIT_MSG_FILE)" > $COMMIT_MSG_FILE
