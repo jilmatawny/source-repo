@@ -3,53 +3,35 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:  # For manual testing
+  workflow_dispatch:  # For manual triggering
 
 jobs:
   mirror:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source repo
+      - name: Checkout source code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Clone with full history
 
-      - name: Debug token permissions
-        env:
-          GH_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Add GitHub to known hosts
         run: |
-          echo "Testing token permissions..."
-          # Test user permissions
-          USER_INFO=$(curl -s -H "Authorization: token $GH_TOKEN" https://api.github.com/user)
-          echo "Token is associated with user: $(echo $USER_INFO | grep -o '"login":"[^"]*"' | cut -d'"' -f4)"
-          
-          # Test mirror repository access
-          echo "Testing access to mirror repository..."
-          REPO_ACCESS=$(curl -s -H "Authorization: token $GH_TOKEN" https://api.github.com/repos/jilmatawny/mirror-repo)
-          if echo "$REPO_ACCESS" | grep -q '"message":"Not Found"'; then
-            echo "ERROR: Cannot access mirror repository with this token"
-            echo "This could be due to:"
-            echo "- Repository name is incorrect"
-            echo "- Token doesn't have access to this repository"
-            echo "- Repository is in a different organization"
-          else
-            echo "SUCCESS: Token can access the mirror repository"
-            echo "Repository info: $(echo $REPO_ACCESS | grep -o '"full_name":"[^"]*"' | cut -d'"' -f4)"
-            echo "Is private: $(echo $REPO_ACCESS | grep -o '"private":[^,]*' | cut -d':' -f2)"
-          fi
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
 
       - name: Mirror repository
-        env:
-          GH_TOKEN: ${{ secrets.MIRROR_TOKEN }}
         run: |
-          echo "Setting up git configuration..."
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          # Configure Git
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
           
-          echo "Adding remote..."
-          # Use a simpler URL format with direct token
-          git remote add mirror https://$GH_TOKEN@github.com/jilmatawny/mirror-repo.git
+          # Add the mirror repository as a remote
+          git remote add mirror git@github.com:jilmatawny/new-mirror-repo.git
           
-          echo "Pushing to mirror repository..."
-          # Add verbose flag to see more details
-          git push mirror main --force -v
+          # Push all branches and tags to the mirror
+          git push --mirror mirror
