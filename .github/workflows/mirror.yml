@@ -1,8 +1,11 @@
-name: Mirror main to mirror-repo
+name: Debug Mirror to mirror-repo
 on:
   push:
     branches:
       - main
+  # Add manual trigger for testing
+  workflow_dispatch:
+
 jobs:
   mirror:
     runs-on: ubuntu-latest
@@ -10,19 +13,89 @@ jobs:
       - name: Checkout source repo
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
-      - name: Push main to mirror-repo
+          fetch-depth: 0  # Fetch all history for all branches and tags
+      
+      - name: Debug environment
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Repository contents:"
+          ls -la
+          echo "Git status:"
+          git status
+          echo "Current remotes:"
+          git remote -v
+      
+      - name: Test GitHub API access
         env:
           MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
         run: |
+          echo "Testing API access with token..."
+          # This will test if the token can access the GitHub API
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+                  -H "Authorization: token ${MIRROR_TOKEN}" \
+                  https://api.github.com/user)
+          echo "GitHub API status code: $STATUS"
+          if [ "$STATUS" = "200" ]; then
+            echo "Token has API access"
+          else
+            echo "Token failed with status $STATUS"
+          fi
+          
+          # Test specific repo access
+          echo "Testing mirror repo access..."
+          REPO_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+                       -H "Authorization: token ${MIRROR_TOKEN}" \
+                       https://api.github.com/repos/jilmatawny/mirror-repo)
+          echo "Mirror repo API status code: $REPO_STATUS"
+          if [ "$REPO_STATUS" = "200" ]; then
+            echo "Token has access to mirror repo"
+          else
+            echo "Token cannot access mirror repo (status $REPO_STATUS)"
+          fi
+      
+      - name: Configure Git
+        run: |
+          echo "Configuring Git..."
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          # Verify the repository exists
-          echo "Checking if repository exists..."
-          curl -s -o /dev/null -w "%{http_code}" https://github.com/jilmatawny/mirror-repo || echo "Repository not found or not accessible"
-          # Add remote with explicit path
-          git remote add mirror https://x-access-token:${MIRROR_TOKEN}@github.com/jilmatawny/mirror-repo.git
-          # Verify remotes
+          echo "Git configuration done"
+      
+      - name: Try different remote URL formats
+        env:
+          MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+        run: |
+          echo "Attempting to add remote with format 1..."
+          git remote add mirror1 https://x-access-token:${MIRROR_TOKEN}@github.com/jilmatawny/mirror-repo.git || echo "Failed to add mirror1"
+          
+          echo "Attempting to add remote with format 2..."
+          git remote add mirror2 https://${MIRROR_TOKEN}@github.com/jilmatawny/mirror-repo.git || echo "Failed to add mirror2"
+          
+          echo "Attempting to add remote with format 3..."
+          git remote add mirror3 https://jilmatawny:${MIRROR_TOKEN}@github.com/jilmatawny/mirror-repo.git || echo "Failed to add mirror3"
+          
+          echo "Current remotes:"
           git remote -v
-          # Push with debugging
-          git push mirror main --force -v
+      
+      - name: Try pushing with each format
+        env:
+          MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+        run: |
+          echo "Trying to push with format 1..."
+          git push mirror1 main --force || echo "Push to mirror1 failed"
+          
+          echo "Trying to push with format 2..."
+          git push mirror2 main --force || echo "Push to mirror2 failed"
+          
+          echo "Trying to push with format 3..."
+          git push mirror3 main --force || echo "Push to mirror3 failed"
+          
+          echo "Push attempts completed"
+      
+      - name: Debug token info (masked)
+        env:
+          MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+        run: |
+          echo "Token length: ${#MIRROR_TOKEN}"
+          echo "First 4 characters of token (for verification only): ${MIRROR_TOKEN:0:4}"
+          echo "Does token start with 'ghp_'? $(if [[ ${MIRROR_TOKEN:0:4} == "ghp_" ]]; then echo "Yes"; else echo "No"; fi)"
+          echo "Does token start with 'github_pat_'? $(if [[ ${MIRROR_TOKEN:0:11} == "github_pat_" ]]; then echo "Yes"; else echo "No"; fi)"
