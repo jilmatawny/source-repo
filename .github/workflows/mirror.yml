@@ -1,5 +1,4 @@
 name: Debug Mirror to mirror-repo
-name: Mirror main to mirror-repo
 on:
   push:
     branches:
@@ -25,10 +24,7 @@ jobs:
           git status
           echo "Current remotes:"
           git remote -v
-      
       - name: Test GitHub API access
-          fetch-depth: 0
-      - name: Push main to mirror-repo
         env:
           MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
         run: |
@@ -102,12 +98,3 @@ jobs:
           echo "First 4 characters of token (for verification only): ${MIRROR_TOKEN:0:4}"
           echo "Does token start with 'ghp_'? $(if [[ ${MIRROR_TOKEN:0:4} == "ghp_" ]]; then echo "Yes"; else echo "No"; fi)"
           echo "Does token start with 'github_pat_'? $(if [[ ${MIRROR_TOKEN:0:11} == "github_pat_" ]]; then echo "Yes"; else echo "No"; fi)"
-          # Verify the repository exists
-          echo "Checking if repository exists..."
-          curl -s -o /dev/null -w "%{http_code}" https://github.com/jilmatawny/mirror-repo || echo "Repository not found or not accessible"
-          # Add remote with explicit path
-          git remote add mirror https://x-access-token:${MIRROR_TOKEN}@github.com/jilmatawny/mirror-repo.git
-          # Verify remotes
-          git remote -v
-          # Push with debugging
-          git push mirror main --force -v
