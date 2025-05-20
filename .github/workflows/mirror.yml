@@ -12,7 +12,7 @@ jobs:
       - name: Checkout source repo
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Fetch all history for all branches and tags 
+          fetch-depth: 0  # Fetch all history for all branches and tags
       - name: Push main to mirror-repo
         env:
           MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
