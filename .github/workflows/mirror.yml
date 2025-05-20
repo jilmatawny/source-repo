@@ -1,0 +1,23 @@
+name: Mirror main to mirror-repo
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags 
+      - name: Push main to mirror-repo
+        env:
+          MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git remote add mirror https://x-access-token:${MIRROR_TOKEN}@github.com/jilmatawny/mirror-repo.git
+          git push mirror main --force
