@@ -1,0 +1,49 @@
+name: Mirror Lambdas Directory with History
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'lambdas/**'
+  workflow_dispatch:
+
+jobs:
+  mirror-lambdas:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Need full history
+      
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+      
+      - name: Add GitHub to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+      
+      - name: Install git-filter-repo
+        run: |
+          pip install git-filter-repo
+      
+      - name: Filter and mirror lambdas directory
+        run: |
+          # Configure Git
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          
+          # Create a temporary clone
+          git clone --mirror . /tmp/source-repo-mirror
+          cd /tmp/source-repo-mirror
+          
+          # Filter the repository to keep only the lambdas directory and its history
+          git-filter-repo --path lambdas/ --path-rename lambdas/:./
+          
+          # Push to the mirror repository
+          git remote add mirror git@github.com:jilmatawny/only-lambda-repo.git
+          git push -f mirror --all
+          git push -f mirror --tags
