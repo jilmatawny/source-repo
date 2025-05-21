@@ -1,4 +1,4 @@
-name: Mirror Lambdas Directory with History
+name: Mirror Lambdas Directory
 on:
   push:
     branches:
@@ -14,7 +14,7 @@ jobs:
       - name: Checkout source repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Need full history
+          fetch-depth: 0
       
       - name: Install SSH key
         uses: webfactory/ssh-agent@v0.7.0
@@ -41,7 +41,8 @@ jobs:
           cd /tmp/source-repo-mirror
           
           # Filter the repository to keep only the lambdas directory and its history
-          git-filter-repo --path lambdas/ --path-rename lambdas/:./
+          # Fix the path renaming syntax - use proper format
+          git-filter-repo --path lambdas/ --path-rename 'lambdas/:'
           
           # Push to the mirror repository
           git remote add mirror git@github.com:jilmatawny/only-lambda.git
