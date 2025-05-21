@@ -1,4 +1,4 @@
-.PHONY: start-moto stop-moto test-lambda setup view-dashboard help run-pipeline pre-push
+.PHONY: start-moto stop-moto status-moto test-lambda setup view-dashboard help run-pipeline pre-push
 
 PYTHON := /usr/local/bin/python3.12
 VENV := venv
@@ -40,6 +40,15 @@ stop-moto:
 		echo "✅ Moto container stopped!"; \
 	else \
 		echo "Moto container not running"; \
+	fi
+
+# Check Moto Docker container status
+status-moto:
+	@if docker ps | grep -q "moto"; then \
+		echo "✅ Moto container is running."; \
+		docker ps | grep moto; \
+	else \
+		echo "❌ Moto container is NOT running."; \
 	fi
 
 # Run Lambda tests with Moto
@@ -115,6 +124,7 @@ help:
 	@echo "  make setup          - Create virtual environment and install dependencies"
 	@echo "  make start-moto     - Start Moto Docker container"
 	@echo "  make stop-moto      - Stop Moto Docker container"
+	@echo "  make status-moto    - Check Moto Docker container status"
 	@echo "  make test-lambda    - Run Lambda tests with Moto"
 	@echo "  make view-dashboard - View the dashboard"
 	@echo "  make run-pipeline   - Run the full CI pipeline"
