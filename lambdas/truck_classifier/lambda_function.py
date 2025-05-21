@@ -22,7 +22,7 @@ sagemaker_client = boto3.client('sagemaker')
 config = {
     "model": {
         "name": "image-classifier-model",
-        "container": "123456789012.dkr.ecr.us-east-1.amazonaws.com/image-classifier:latest",
+        "container": "6565657657575.dkr.ecr.us-east-1.amazonaws.com/image-classifier:latest",
         "data_url": "s3://test-bucket/model.tar.gz"
     },
     "endpoint": {
