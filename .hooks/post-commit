@@ -19,14 +19,14 @@ echo "Dashboard updated with latest metrics!"
 
 # Now that the commit process is complete, ask about viewing the dashboard
 # This won't be interrupted by other git processes
-echo ""
-echo "Would you like to view your development dashboard? (y/n)"
-read -r -n 1 REPLY
-echo ""
+#echo ""
+#echo "Would you like to view your development dashboard? (y/n)"
+#read -r -n 1 REPLY
+#echo ""
 
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-  echo "Opening dashboard..."
-  ./view-dashboard.sh
-fi
+#if [[ $REPLY =~ ^[Yy]$ ]]; then
+echo "Opening dashboard..."
+./view-dashboard.sh
+#fi
 
 exit 0
