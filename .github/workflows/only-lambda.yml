@@ -44,6 +44,6 @@ jobs:
           git-filter-repo --path lambdas/ --path-rename lambdas/:./
           
           # Push to the mirror repository
-          git remote add mirror git@github.com:jilmatawny/only-lambda-repo.git
+          git remote add mirror git@github.com:jilmatawny/only-lambda.git
           git push -f mirror --all
           git push -f mirror --tags
