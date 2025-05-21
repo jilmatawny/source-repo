@@ -1,4 +1,4 @@
-.PHONY: start-moto stop-moto status-moto test-lambda setup view-dashboard help run-pipeline pre-push
+.PHONY: start-moto stop-moto status-moto test-lambda setup view-dashboard help run-pipeline pre-push run-pipeline-sh
 
 PYTHON := /usr/local/bin/python3.12
 VENV := venv
@@ -118,6 +118,11 @@ pre-push:
 	@echo "Running pre-push hook..."
 	@.git/hooks/pre-push
 
+# Run the .ci/run-pipeline.sh script
+run-pipeline-sh:
+	@echo "Running .ci/run-pipeline.sh..."
+	@.ci/run-pipeline.sh
+
 # Show help message
 help:
 	@echo "Available commands:"
@@ -128,5 +133,6 @@ help:
 	@echo "  make test-lambda    - Run Lambda tests with Moto"
 	@echo "  make view-dashboard - View the dashboard"
 	@echo "  make run-pipeline   - Run the full CI pipeline"
+	@echo "  make run-pipeline-sh - Run the .ci/run-pipeline.sh script"
 	@echo "  make pre-push       - Run the pre-push hook manually"
 	@echo "  make help           - Show this help message" 
