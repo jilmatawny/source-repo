@@ -16,7 +16,7 @@ sagemaker_client = boto3.client('sagemaker')
 config = {
     "model": {
         "name": "test-model",
-        "container": "123456789012.dkr.ecr.us-east-1.amazonaws.com/test-image:latest",
+        "container": "123456786666.dkr.ecr.us-east-1.amazonaws.com/test-image:latest",
         "data_url": "s3://test-bucket/model.tar.gz"
     },
     "endpoint": {
